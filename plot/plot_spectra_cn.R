@@ -165,11 +165,16 @@ spectra_cn_plot  <-  function(hist, name, zero="", cutoff="", w=6, h=4.5, x_max,
   # x and y max
   y_max_given=TRUE;
   if (y_max == 0) {
-    # For stacked plots, calculate sum of counts at each kmer_multiplicity
-    dat_filtered = dat[dat[,1]!="read-total" & dat[,1]!="read-only" & dat[,2] > 3,]
+    # For line/fill plots: max of individual counts (excluding read-total)
+    dat_filtered = dat[dat[,1]!="read-total" & dat[,2] > 3,]
+    y_max = max(dat_filtered$Count)
+
+    # For stacked plots: sum of all categories at each kmer_multiplicity (including read-only)
     stacked_sums = aggregate(Count ~ kmer_multiplicity, data = dat_filtered, FUN = sum)
-    y_max = max(stacked_sums$Count)
+    y_max_stack = max(stacked_sums$Count)
     y_max_given=FALSE;
+  } else {
+    y_max_stack = y_max
   }
   if (x_max == 0) {
     x_max=dat[dat[,3]==max(dat[dat[,1]!="read-total" & dat[,1]!="read-only" & dat[,2] > 3,]$Count),]$kmer_multiplicity
@@ -177,12 +182,15 @@ spectra_cn_plot  <-  function(hist, name, zero="", cutoff="", w=6, h=4.5, x_max,
   }
   if (! y_max_given) {
     y_max=y_max*1.1
+    y_max_stack=y_max_stack*1.1
   }
   print(paste("x_max:", x_max, sep=" "))
   if (zero != "") {
     y_max=max(y_max, sum(dat_0[,3]*1.1))	# Check once more when dat_0 is available
+    y_max_stack=max(y_max_stack, sum(dat_0[,3]*1.1))
   }
   print(paste("y_max:", y_max, sep=" "))
+  print(paste("y_max_stack:", y_max_stack, sep=" "))
 
   if (type == "all" || type == "line") {
     print("## Line graph")
@@ -198,7 +206,7 @@ spectra_cn_plot  <-  function(hist, name, zero="", cutoff="", w=6, h=4.5, x_max,
   
   if (type == "all" || type == "stack") {
     print("## Stacked")
-    plot_stack(dat, name, x_max, y_max, zero = dat_0, cutoff = dat_cut)
+    plot_stack(dat, name, x_max, y_max_stack, zero = dat_0, cutoff = dat_cut)
     save_plot(name=name, type="st", pdf, h=h, w=w)
   }
 }
