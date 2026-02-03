@@ -165,11 +165,14 @@ spectra_cn_plot  <-  function(hist, name, zero="", cutoff="", w=6, h=4.5, x_max,
   # x and y max
   y_max_given=TRUE;
   if (y_max == 0) {
-    y_max=max(dat[dat[,1]!="read-total" & dat[,1]!="read-only" & dat[,2] > 3,]$Count)
+    # For stacked plots, calculate sum of counts at each kmer_multiplicity
+    dat_filtered = dat[dat[,1]!="read-total" & dat[,1]!="read-only" & dat[,2] > 3,]
+    stacked_sums = aggregate(Count ~ kmer_multiplicity, data = dat_filtered, FUN = sum)
+    y_max = max(stacked_sums$Count)
     y_max_given=FALSE;
   }
   if (x_max == 0) {
-    x_max=dat[dat[,3]==y_max,]$kmer_multiplicity
+    x_max=dat[dat[,3]==max(dat[dat[,1]!="read-total" & dat[,1]!="read-only" & dat[,2] > 3,]$Count),]$kmer_multiplicity
     x_max=x_max*2.5
   }
   if (! y_max_given) {
