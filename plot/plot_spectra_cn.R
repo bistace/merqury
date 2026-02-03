@@ -34,7 +34,7 @@ merqury_brw <- function(dat, direction=1) {
   merqury_colors
 }
 
-ALPHA=0.4
+ALPHA=0.8
 LINE_SIZE=0.3
 
 fancy_scientific <- function(d) {
