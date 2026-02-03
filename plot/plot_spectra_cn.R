@@ -17,15 +17,16 @@ parser$add_argument("-t", "--type", type="character", default="all", help="avail
 parser$add_argument("-p", "--pdf", dest='pdf', default=FALSE, action='store_true', help="get output in .pdf. [default .png]")
 args <- parser$parse_args()
 
-# KAT-style color scheme for spectra-cn plots
-gray = "black"
+# Color scheme for spectra-cn plots
+# Categories: read-only, 1, 2, 3, 4, >4
+black = "black"
 red = "red"
-green = "green"
-orange = "orange"
-blue = "blue"
 purple = "purple"
+green = "green"
+blue = "blue"
+orange = "orange"
 
-merqury_col = c(gray, red, green, orange, blue, purple)
+merqury_col = c(black, red, purple, green, blue, orange)
 merqury_brw <- function(dat, direction=1) {
   merqury_colors=merqury_col[1:length(unique(dat))]
   if (direction == -1) {
