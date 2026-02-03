@@ -35,7 +35,8 @@ merqury_brw <- function(dat, direction=1) {
   merqury_colors
 }
 
-ALPHA=0.8
+ALPHA_STACK=0.8
+ALPHA_FILL=0.4
 LINE_SIZE=0.3
 
 fancy_scientific <- function(d) {
@@ -72,14 +73,14 @@ plot_cutoff <- function(cutoff) {
 plot_zero_fill <- function(zero) {
   if (!is.null(zero)) {
     geom_bar(data=zero, aes(x=zero[,2], y=zero[,3], fill=zero[,1], colour=zero[,1], group=zero[,1]),
-      position="stack", stat="identity", show.legend = FALSE, width = 2, alpha=ALPHA)
+      position="stack", stat="identity", show.legend = FALSE, width = 2, alpha=ALPHA_FILL)
   }
 }
 
 plot_zero_stack <- function(zero) {
   if (!is.null(zero)) {
     geom_bar(data=zero, aes(x=zero[,2], y=zero[,3], fill=zero[,1], colour=zero[,1]),
-      position="stack", stat="identity", show.legend = FALSE, width = 2, alpha=ALPHA)
+      position="stack", stat="identity", show.legend = FALSE, width = 2, alpha=ALPHA_STACK)
   }
 }
 
@@ -108,7 +109,7 @@ plot_line <- function(dat, name, x_max, y_max, zero, cutoff) {
 
 plot_fill <- function(dat, name, x_max, y_max, zero, cutoff) {
   ggplot(data=dat, aes(x=kmer_multiplicity, y=Count)) +
-    geom_ribbon(aes(ymin=0, ymax=pmax(Count,0), fill=dat[,1], colour=dat[,1]), alpha=ALPHA, linetype=1) +
+    geom_ribbon(aes(ymin=0, ymax=pmax(Count,0), fill=dat[,1], colour=dat[,1]), alpha=ALPHA_FILL, linetype=1) +
     plot_zero_fill(zero=zero) +
     plot_cutoff(cutoff) +
     theme_bw() +
@@ -122,7 +123,7 @@ plot_fill <- function(dat, name, x_max, y_max, zero, cutoff) {
 plot_stack <- function(dat, name, x_max, y_max, zero, cutoff) {
   dat[,1]=factor(dat[,1], levels=rev(levels(dat[,1]))) #[c(4,3,2,1)] reverse the order to stack from read-only
   ggplot(data=dat, aes(x=kmer_multiplicity, y=Count, fill=dat[,1], colour=dat[,1])) +
-    geom_area(size=LINE_SIZE , alpha=ALPHA) +
+    geom_area(size=LINE_SIZE , alpha=ALPHA_STACK) +
     plot_zero_stack(zero=zero) +
     plot_cutoff(cutoff) +
     theme_bw() +
