@@ -39,6 +39,29 @@ ALPHA_STACK=0.8
 ALPHA_FILL=0.4
 LINE_SIZE=0.3
 
+# Find the first local minimum in the histogram (valley between error and real k-mers)
+find_valley <- function(dat) {
+  # Aggregate total counts per kmer_multiplicity (excluding read-total)
+  totals <- aggregate(Count ~ kmer_multiplicity,
+                      data = dat[dat[,1] != "read-total",],
+                      FUN = sum)
+  totals <- totals[order(totals$kmer_multiplicity),]
+
+  counts <- totals$Count
+  mults <- totals$kmer_multiplicity
+
+  # Find first local minimum (start from position 2 to skip edge effects)
+  for (i in 2:(length(counts) - 1)) {
+    if (counts[i] < counts[i-1] && counts[i] <= counts[i+1]) {
+      print(paste("Valley found at multiplicity:", mults[i]))
+      return(mults[i])
+    }
+  }
+  # Fallback if no minimum found
+  print("No valley found, using default cutoff of 3")
+  return(3)
+}
+
 fancy_scientific <- function(d) {
   # turn in to character string in scientific notation
   d <- format(d, scientific = TRUE)
@@ -164,11 +187,14 @@ spectra_cn_plot  <-  function(hist, name, zero="", cutoff="", w=6, h=4.5, x_max,
     dat_cut[,1]=factor(dat_cut[,1], levels=unique(dat_cut[,1]), ordered=TRUE)
   }
 
+  # Find the valley between error k-mers and real k-mers
+  valley_cutoff = find_valley(dat)
+
   # x and y max
   y_max_given=TRUE;
   if (y_max == 0) {
     # For line/fill plots: max of individual counts (excluding read-total)
-    dat_filtered = dat[dat[,1]!="read-total" & dat[,2] > 3,]
+    dat_filtered = dat[dat[,1]!="read-total" & dat[,2] > valley_cutoff,]
     y_max = max(dat_filtered$Count)
 
     # For stacked plots: sum of all categories at each kmer_multiplicity (including read-only)
@@ -179,7 +205,7 @@ spectra_cn_plot  <-  function(hist, name, zero="", cutoff="", w=6, h=4.5, x_max,
     y_max_stack = y_max
   }
   if (x_max == 0) {
-    x_max=dat[dat[,3]==max(dat[dat[,1]!="read-total" & dat[,1]!="read-only" & dat[,2] > 3,]$Count),]$kmer_multiplicity
+    x_max=dat[dat[,3]==max(dat[dat[,1]!="read-total" & dat[,1]!="read-only" & dat[,2] > valley_cutoff,]$Count),]$kmer_multiplicity
     x_max=x_max*2.5
   }
   if (! y_max_given) {
